@@ -22,4 +22,29 @@ class RunLengthEncoding
     end.join('')
   end
 
+  def self.decode(str)
+    split_string = str.split(/(\d+)/).keep_if { |s| s != "" }
+    arr_to_use = []
+    split_string.each do |s|
+      if s.to_i != 0
+        arr_to_use << s
+      else
+        s.split('').each { |char| arr_to_use << char }
+      end
+    end
+    final_string = ""
+    current_letter = arr_to_use.shift
+    while arr_to_use.length > 0
+      if /(\d+)/.match(current_letter)
+        next_letter = arr_to_use.shift
+        final_string << next_letter * current_letter.to_i
+      else
+        final_string << current_letter
+      end
+      current_letter = arr_to_use.shift
+      final_string << current_letter if arr_to_use.length == 0 && current_letter
+    end
+    final_string
+  end
+
 end
