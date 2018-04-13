@@ -1,25 +1,65 @@
+module BookKeeping
+  VERSION = 2
+end
+
+class RunLength
+  attr_reader :char
+
+  def initialize(char)
+    @char = char
+    @count = 1
+  end
+
+  def count
+    @count
+  end
+
+  def increment!
+    @count += 1
+  end
+end
+
+class EncodedString
+  def initialize(str = '')
+    @encoded = str.to_s
+  end
+
+  def add_char(char)
+    @encoded += char.to_s
+    self
+  end
+
+  def to_s
+    @encoded.to_s
+  end
+end
 
 class RunLengthEncoding
 
   def self.encode(str)
-    split_string = str.split('')
-    blocked_array = [[split_string.shift]]
+    split_string = str.chars
+    @list_of_run_lengths = []
+    @list_of_run_lengths << RunLength.new(split_string.shift)
 
-    while split_string.length > 0
-      current_letter = split_string.shift
-      if blocked_array[-1][-1] == current_letter
-        blocked_array[-1] << current_letter
-      else
-        blocked_array << [current_letter]
-      end
+    split_string.reduce(@list_of_run_lengths) do |list_of_run_lengths, current_letter|
+      encode_new_letter(list_of_run_lengths, current_letter)
     end
-    blocked_array.map do |arr|
-      return_string = arr[0].to_s
-      if arr.count > 1
-        return_string = arr.count.to_s + return_string
-      end
-      return_string
-    end.join('')
+
+    @list_of_run_lengths.reduce(EncodedString.new) do |encoded, run_length|
+      blocked_char = run_length.char
+      encoded.add_char(run_length.count) if run_length.count > 1
+      encoded.add_char(blocked_char)
+    end.to_s
+  end
+
+  def self.encode_new_letter(list_of_run_lengths, char)
+    current_run_length = list_of_run_lengths.last
+    if current_run_length.char == char
+      current_run_length.increment!
+    else
+      list_of_run_lengths << RunLength.new(char)
+    end
+    list_of_run_lengths
   end
 
   def self.decode(str)
